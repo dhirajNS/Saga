@@ -1,5 +1,6 @@
 package com.order.ms.controller;
 
+import com.order.ms.entity.Orders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -9,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.order.ms.dto.CustomerOrder;
 import com.order.ms.dto.OrderEvent;
-import com.order.ms.entity.Order;
 import com.order.ms.entity.OrderRepository;
 
 @RestController
@@ -24,13 +24,14 @@ public class OrderController {
 
 	@PostMapping("/orders")
 	public void createOrder(@RequestBody CustomerOrder customerOrder) {
-		Order order = new Order();
+		Orders order = new Orders();
 
 		try {
 			order.setAmount(customerOrder.getAmount());
 			order.setItem(customerOrder.getItem());
 			order.setQuantity(customerOrder.getQuantity());
 			order.setStatus("CREATED");
+
 			order = repository.save(order);
 
 			customerOrder.setOrderId(order.getId());

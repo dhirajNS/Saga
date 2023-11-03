@@ -1,7 +1,9 @@
 package com.order.ms.entity;
 
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
 
-public interface OrderRepository extends CrudRepository<Order, Long> {
+@Repository
+public interface OrderRepository extends CrudRepository<Orders, Long> {
 
 }

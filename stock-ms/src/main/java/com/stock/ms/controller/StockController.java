@@ -34,7 +34,7 @@ public class StockController {
 	@KafkaListener(topics = "new-payments", groupId = "payments-group")
 	public void updateStock(String paymentEvent) throws JsonMappingException, JsonProcessingException {
 		System.out.println("Inside update inventory for order "+paymentEvent);
-		
+
 		DeliveryEvent event = new DeliveryEvent();
 
 		PaymentEvent p = new ObjectMapper().readValue(paymentEvent, PaymentEvent.class);
@@ -48,6 +48,14 @@ public class StockController {
 			if (!exists) {
 				System.out.println("Stock not exist so reverting the order");
 				throw new Exception("Stock not available");
+			}
+
+			for(WareHouse iterable:inventories){
+				int quantityLeft = iterable.getQuantity() - order.getQuantity();
+				if(quantityLeft<0){
+					System.out.println("Enough Stock quantity not exist so reverting the order");
+					throw new Exception("Stock quantity not available");
+				}
 			}
 
 			inventories.forEach(i -> {

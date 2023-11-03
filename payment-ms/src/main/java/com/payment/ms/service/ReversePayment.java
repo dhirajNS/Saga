@@ -24,7 +24,6 @@ public class ReversePayment {
 	@KafkaListener(topics = "reversed-payments", groupId = "payments-group")
 	public void reversePayment(String event) {
 		System.out.println("Inside reverse payment for order "+event);
-		
 		try {
 			PaymentEvent paymentEvent = new ObjectMapper().readValue(event, PaymentEvent.class);
 

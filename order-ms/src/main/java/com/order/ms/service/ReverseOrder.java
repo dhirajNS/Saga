@@ -2,13 +2,14 @@ package com.order.ms.service;
 
 import java.util.Optional;
 
+import com.order.ms.entity.Orders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.order.ms.dto.OrderEvent;
-import com.order.ms.entity.Order;
+
 import com.order.ms.entity.OrderRepository;
 
 @Component
@@ -24,7 +25,7 @@ public class ReverseOrder {
 		try {
 			OrderEvent orderEvent = new ObjectMapper().readValue(event, OrderEvent.class);
 
-			Optional<Order> order = repository.findById(orderEvent.getOrder().getOrderId());
+			Optional<Orders> order = repository.findById(orderEvent.getOrder().getOrderId());
 
 			order.ifPresent(o -> {
 				o.setStatus("FAILED");
