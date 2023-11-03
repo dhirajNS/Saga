@@ -31,49 +31,49 @@ public class StockController {
 	@Autowired
 	private KafkaTemplate<String, PaymentEvent> kafkaPaymentTemplate;
 
-	@KafkaListener(topics = "new-payments", groupId = "payments-group")
-	public void updateStock(String paymentEvent) throws JsonMappingException, JsonProcessingException {
-		System.out.println("Inside update inventory for order "+paymentEvent);
-
-		DeliveryEvent event = new DeliveryEvent();
-
-		PaymentEvent p = new ObjectMapper().readValue(paymentEvent, PaymentEvent.class);
-		CustomerOrder order = p.getOrder();
-
-		try {
-			Iterable<WareHouse> inventories = repository.findByItem(order.getItem());
-
-			boolean exists = inventories.iterator().hasNext();
-
-			if (!exists) {
-				System.out.println("Stock not exist so reverting the order");
-				throw new Exception("Stock not available");
-			}
-
-			for(WareHouse iterable:inventories){
-				int quantityLeft = iterable.getQuantity() - order.getQuantity();
-				if(quantityLeft<0){
-					System.out.println("Enough Stock quantity not exist so reverting the order");
-					throw new Exception("Stock quantity not available");
-				}
-			}
-
-			inventories.forEach(i -> {
-				i.setQuantity(i.getQuantity() - order.getQuantity());
-
-				repository.save(i);
-			});
-
-			event.setType("STOCK_UPDATED");
-			event.setOrder(p.getOrder());
-			kafkaTemplate.send("new-stock", event);
-		} catch (Exception e) {
-			PaymentEvent pe = new PaymentEvent();
-			pe.setOrder(order);
-			pe.setType("PAYMENT_REVERSED");
-			kafkaPaymentTemplate.send("reversed-payments", pe);
-		}
-	}
+//	@KafkaListener(topics = "new-payments", groupId = "payments-group")
+//	public void updateStock(String paymentEvent) throws JsonMappingException, JsonProcessingException {
+//		System.out.println("Inside update inventory for order "+paymentEvent);
+//
+//		DeliveryEvent event = new DeliveryEvent();
+//
+//		PaymentEvent p = new ObjectMapper().readValue(paymentEvent, PaymentEvent.class);
+//		CustomerOrder order = p.getOrder();
+//
+//		try {
+//			Iterable<WareHouse> inventories = repository.findByItem(order.getItem());
+//
+//			boolean exists = inventories.iterator().hasNext();
+//
+//			if (!exists) {
+//				System.out.println("Stock not exist so reverting the order");
+//				throw new Exception("Stock not available");
+//			}
+//
+//			for(WareHouse iterable:inventories){
+//				int quantityLeft = iterable.getQuantity() - order.getQuantity();
+//				if(quantityLeft<0){
+//					System.out.println("Enough Stock quantity not exist so reverting the order");
+//					throw new Exception("Stock quantity not available");
+//				}
+//			}
+//
+//			inventories.forEach(i -> {
+//				i.setQuantity(i.getQuantity() - order.getQuantity());
+//
+//				repository.save(i);
+//			});
+//
+//			event.setType("STOCK_UPDATED");
+//			event.setOrder(p.getOrder());
+//			kafkaTemplate.send("new-stock", event);
+//		} catch (Exception e) {
+//			PaymentEvent pe = new PaymentEvent();
+//			pe.setOrder(order);
+//			pe.setType("PAYMENT_REVERSED");
+//			kafkaPaymentTemplate.send("reversed-payments", pe);
+//		}
+//	}
 
 	@PostMapping("/addItems")
 	public void addItems(@RequestBody Stock stock) {

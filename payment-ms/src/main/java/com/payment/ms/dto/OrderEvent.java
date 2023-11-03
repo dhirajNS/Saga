@@ -9,6 +9,6 @@ public class OrderEvent {
 
 	private String type;
 
-	private CustomerOrder order;
+	private CustomerOrder customerOrder;
 
 }

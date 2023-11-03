@@ -1,21 +1,21 @@
 package com.order.ms.entity;
 
-
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 
-import javax.persistence.*;
-
-@Data
-@Table(name = "orders")
+@Getter
+@Setter
 @Entity
 public class Orders {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	@GeneratedValue
+	private long id;
 
 	@Column
 	private String item;
