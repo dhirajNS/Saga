@@ -29,7 +29,7 @@ public class DeliveryController {
 		
 		Delivery shipment = new Delivery();
 		DeliveryEvent inventoryEvent = new ObjectMapper().readValue(event, DeliveryEvent.class);
-		CustomerOrder order = inventoryEvent.getOrder();
+		CustomerOrder order = inventoryEvent.getCustomerOrder();
 
 		try {
 			if (order.getAddress() == null) {
@@ -51,7 +51,7 @@ public class DeliveryController {
 
 			DeliveryEvent reverseEvent = new DeliveryEvent();
 			reverseEvent.setType("STOCK_REVERSED");
-			reverseEvent.setOrder(order);
+			reverseEvent.setCustomerOrder(order);
 			kafkaTemplate.send("reversed-stock", reverseEvent);
 		}
 	}

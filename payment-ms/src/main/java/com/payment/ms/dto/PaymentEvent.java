@@ -11,6 +11,6 @@ public class PaymentEvent {
 
 	private String type;
 
-	private CustomerOrder order;
+	private CustomerOrder customerOrder;
 
 }
