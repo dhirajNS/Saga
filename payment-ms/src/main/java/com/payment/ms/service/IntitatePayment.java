@@ -1,5 +1,6 @@
 package com.payment.ms.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.payment.ms.dto.CustomerOrder;
 import com.payment.ms.dto.OrderEvent;
@@ -17,15 +18,17 @@ public class IntitatePayment {
 
     @Autowired
     private KafkaTemplate<String, PaymentEvent> kafkaTemplate;
+    @Autowired
+	private KafkaTemplate<String, OrderEvent> kafkaOrderTemplate;
 
     @KafkaListener(topics = "initiate-payment", groupId = "payments-group-2")
-    public void intitatePayment(String event) {
+    public void intitatePayment(String event) throws JsonProcessingException {
         System.out.println("Inside initiate payment for order " + event);
         Payment payment = new Payment();
-        try {
-            OrderEvent orderEvent = new ObjectMapper().readValue(event, OrderEvent.class);
-            CustomerOrder order = orderEvent.getCustomerOrder();
 
+        OrderEvent orderEvent = new ObjectMapper().readValue(event, OrderEvent.class);
+        CustomerOrder order = orderEvent.getCustomerOrder();
+        try{
             payment.setAmount(order.getAmount());
             payment.setMode(order.getPaymentMode());
             payment.setOrderId(order.getOrderId());
@@ -37,14 +40,14 @@ public class IntitatePayment {
             paymentEvent.setType("PAYMENT-SUCCESS");
             kafkaTemplate.send("payment-success", paymentEvent);
         } catch (Exception e) {
-//            payment.setOrderId(order.getOrderId());
-//            payment.setStatus("FAILED");
-//            repository.save(payment);
-//
-//            OrderEvent oe = new OrderEvent();
-//            oe.setOrder(order);
-//            oe.setType("ORDER_REVERSED");
-//            kafkaOrderTemplate.send("reversed-orders", orderEvent);
+            payment.setOrderId(order.getOrderId());
+            payment.setStatus("FAILED");
+            repository.save(payment);
+
+            OrderEvent oe = new OrderEvent();
+            oe.setCustomerOrder(order);
+            oe.setType("ORDER-REVERSED");
+            kafkaOrderTemplate.send("order-reverse", oe);
         }
     }
 }
