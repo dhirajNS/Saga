@@ -62,9 +62,9 @@ public class UpdateStock {
             kafkaTemplate.send("stock-updated", event);
         } catch (Exception e) {
             PaymentEvent pe = new PaymentEvent();
-//            pe.setOrder(order);
-//            pe.setType("PAYMENT_REVERSED");
-//            kafkaPaymentTemplate.send("reversed-payments", pe);
+            pe.setCustomerOrder(order);
+            pe.setType("PAYMENT_REVERSED");
+            kafkaPaymentTemplate.send("reverse-payment", pe);
         }
     }
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.orchestractionservice.orchestractionservice.model.CustomerOrder;
 import com.orchestractionservice.orchestractionservice.model.OrderEvent;
+import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -50,22 +51,34 @@ public class OrchestrationController {
         order.setCustomerOrder(event.getCustomerOrder());
         order.setType("ORDER-REVERTED");
         // Define the POST request URL
-        String apiUrl = "https://localhost:8080/api/revert-orders";
+        String apiUrl = "http://localhost:8080/api/revert-orders";
         // Create HttpHeaders and set the content type
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Type", "application/json");
         // Create an HttpEntity with the request body and headers
         HttpEntity<CustomerOrder> requestEntity = new HttpEntity<>(event.getCustomerOrder(), headers);
         // Send the POST request
-        ResponseEntity<CustomerOrder> response = restTemplate.exchange(
+        ResponseEntity<String> response = restTemplate.exchange(
                 apiUrl,
                 HttpMethod.POST,
                 requestEntity,
-                CustomerOrder.class
+                String.class
         );
         System.out.println(response);
          //restTemplate.getForObject(url, CustomerOrder.class);
         //kafkaTemplate.send("order-reverse", order);
+    }
+
+
+    @KafkaListener(topics = "payment-success", groupId = "payment-group-2")
+    public void updateStock(String orderEvent) throws JsonProcessingException {
+        System.out.println("inside orchest updatestock");
+        OrderEvent event = new ObjectMapper().readValue(orderEvent, OrderEvent.class);
+        OrderEvent stockEvent = new OrderEvent();
+        stockEvent.setCustomerOrder(event.getCustomerOrder());
+        stockEvent.setType("UPDATE-STOCK");
+        kafkaTemplate.send("update-stock", stockEvent);
+        System.out.println("after orchest updatestock");
     }
 
     @KafkaListener(topics = "reverse-payment", groupId = "payment-group-2")
@@ -75,33 +88,22 @@ public class OrchestrationController {
         OrderEvent stockEvent = new OrderEvent();
         stockEvent.setCustomerOrder(event.getCustomerOrder());
         stockEvent.setType("UPDATE-STOCK");
-        String apiUrl = "https://localhost:8081/api/revert-payment";
+        String apiUrl = "http://localhost:8081/revert-payment";
         // Create HttpHeaders and set the content type
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Type", "application/json");
         // Create an HttpEntity with the request body and headers
         HttpEntity<CustomerOrder> requestEntity = new HttpEntity<>(event.getCustomerOrder(), headers);
         // Send the POST request
-        ResponseEntity<CustomerOrder> response = restTemplate.exchange(
+        ResponseEntity<String> response = restTemplate.exchange(
                 apiUrl,
                 HttpMethod.POST,
                 requestEntity,
-                CustomerOrder.class
+                String.class
         );
         System.out.println(response);
         //kafkaTemplate.send("update-stock", stockEvent);
         System.out.println("after reverse payment");
-    }
-
-    @KafkaListener(topics = "reverse-payment", groupId = "payment-group-2")
-    public void updateStock(String orderEvent) throws JsonProcessingException {
-        System.out.println("inside orchest updatestock");
-        OrderEvent event = new ObjectMapper().readValue(orderEvent, OrderEvent.class);
-        OrderEvent stockEvent = new OrderEvent();
-        stockEvent.setCustomerOrder(event.getCustomerOrder());
-        stockEvent.setType("UPDATE-STOCK");
-        kafkaTemplate.send("update-stock", stockEvent);
-        System.out.println("after orchest updatestock");
     }
 
     @KafkaListener(topics = "stock-updated", groupId = "stock-group-2")

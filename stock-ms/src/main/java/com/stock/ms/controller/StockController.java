@@ -1,6 +1,9 @@
 package com.stock.ms.controller;
 
+import com.stock.ms.service.ReversesStock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,6 +33,9 @@ public class StockController {
 
 	@Autowired
 	private KafkaTemplate<String, PaymentEvent> kafkaPaymentTemplate;
+
+	@Autowired
+	ReversesStock reversesStock;
 
 //	@KafkaListener(topics = "new-payments", groupId = "payments-group")
 //	public void updateStock(String paymentEvent) throws JsonMappingException, JsonProcessingException {
@@ -90,5 +96,11 @@ public class StockController {
 			i.setQuantity(stock.getQuantity());
 			repository.save(i);
 		}
+	}
+
+	@PostMapping("/revert-stock")
+	public ResponseEntity<String> revertStock(@RequestBody CustomerOrder customerOrder) {
+		reversesStock.reverseStock(customerOrder);
+		return ResponseEntity.status(HttpStatus.OK).body("revert-stock");
 	}
 }
