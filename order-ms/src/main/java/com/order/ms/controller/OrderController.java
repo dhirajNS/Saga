@@ -12,6 +12,9 @@ import com.order.ms.dto.CustomerOrder;
 import com.order.ms.dto.OrderEvent;
 import com.order.ms.entity.OrderRepository;
 
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 @RestController
 @RequestMapping("/api")
 public class OrderController {
@@ -25,6 +28,7 @@ public class OrderController {
 	@PostMapping("/orders")
 	public void createOrder(@RequestBody CustomerOrder customerOrder) {
 		Orders order = new Orders();
+		Stream.of(1, 2, 3, 4, 5).collect(Collectors.toList());
 
 		try {
 			order.setAmount(customerOrder.getAmount());
